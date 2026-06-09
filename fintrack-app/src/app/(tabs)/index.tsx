@@ -39,15 +39,16 @@ export default function DashboardScreen() {
 
   return (
     <ScrollView className="flex-1 bg-slate-50 dark:bg-slate-900" contentContainerStyle={{ paddingBottom: 100 }}>
-      <View className="px-6 pt-16 pb-6 bg-blue-600 rounded-b-[40px]">
+      {/* Premium Gradient Header */}
+      <View className="px-6 pt-16 pb-8 bg-blue-600 dark:bg-slate-900 rounded-b-[40px] shadow-lg" style={{ backgroundColor: '#1e40af' }}>
         <View className="flex-row justify-between items-center mb-6">
           <View>
-            <Text className="text-blue-100 text-sm font-medium">Good Morning,</Text>
-            <Text className="text-white text-2xl font-bold">{profile?.display_name || 'User'}</Text>
+            <Text className="text-blue-200 text-xs font-semibold uppercase tracking-wider">Good Morning,</Text>
+            <Text className="text-white text-3xl font-extrabold mt-0.5">{profile?.display_name || 'User'}</Text>
           </View>
           <TouchableOpacity 
             onPress={() => router.push('/(tabs)/settings')}
-            className="w-12 h-12 bg-blue-500 rounded-full items-center justify-center border-2 border-blue-400"
+            className="w-12 h-12 bg-white/10 dark:bg-slate-800 rounded-full items-center justify-center border border-white/20"
           >
             <Text className="text-white text-lg font-bold">
               {profile?.display_name?.charAt(0).toUpperCase() || 'U'}
@@ -55,23 +56,33 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </View>
 
-        <View className="bg-white/20 rounded-3xl p-6 mb-2">
-          <Text className="text-blue-100 font-medium mb-1">Total Balance</Text>
-          <Text className="text-white text-4xl font-extrabold mb-4">
+        {/* Total Balance Card */}
+        <View className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/10">
+          <Text className="text-blue-100 font-medium mb-1 text-sm opacity-90">Total Balance</Text>
+          <Text 
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.5}
+            className="text-white text-4xl font-extrabold mb-4"
+          >
             {formatCurrency((summary?.income || 0) - (summary?.expense || 0), currency)}
           </Text>
           
           {monthlyBudget && (
             <View>
               <View className="flex-row justify-between mb-2">
-                <Text className="text-blue-100 text-xs">Monthly Budget</Text>
-                <Text className="text-white text-xs font-bold">
+                <Text className="text-blue-100 text-xs opacity-90">Monthly Budget</Text>
+                <Text 
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  className="text-white text-xs font-bold"
+                >
                   {formatCurrency(summary?.expense || 0, currency)} / {formatCurrency(monthlyBudget, currency)}
                 </Text>
               </View>
-              <View className="h-2 w-full bg-blue-900/50 rounded-full overflow-hidden">
+              <View className="h-2.5 w-full bg-blue-950/40 rounded-full overflow-hidden">
                 <View 
-                  className={`h-full rounded-full ${expensePercentage > 80 ? 'bg-red-400' : 'bg-white'}`} 
+                  className={`h-full rounded-full ${expensePercentage > 80 ? 'bg-red-400' : 'bg-emerald-400'}`} 
                   style={{ width: `${expensePercentage}%` }} 
                 />
               </View>

@@ -67,6 +67,13 @@ export const ChartCard = ({ data, xKey, yKeys, type, title, colors = ['#3b82f6',
     return `${linePath} L ${lastX} ${baseY} L ${firstX} ${baseY} Z`;
   };
 
+  // Format values shorthand (e.g. $10K, $2.5M)
+  const formatValueShorthand = (val: number) => {
+    if (val >= 1000000) return `$${(val / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+    if (val >= 1000) return `$${(val / 1000).toFixed(0)}K`;
+    return `$${Math.round(val)}`;
+  };
+
   // Grid Lines
   const gridCount = 4;
   const gridLines = Array.from({ length: gridCount }).map((_, idx) => {
@@ -89,7 +96,7 @@ export const ChartCard = ({ data, xKey, yKeys, type, title, colors = ['#3b82f6',
             {/* Color Gradients */}
             {colors.map((color, idx) => (
               <linearGradient key={`grad-${idx}`} id={`gradient-${idx}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+                <stop offset="0%" stopColor={color} stopOpacity="0.25" />
                 <stop offset="100%" stopColor={color} stopOpacity="0.0" />
               </linearGradient>
             ))}
@@ -106,17 +113,17 @@ export const ChartCard = ({ data, xKey, yKeys, type, title, colors = ['#3b82f6',
                 stroke="#e2e8f0"
                 strokeWidth="1"
                 strokeDasharray="4 4"
-                opacity={0.6}
+                opacity={0.5}
               />
               <text
                 x={paddingLeft - 8}
                 y={line.y + 4}
                 fill="#94a3b8"
-                fontSize="10"
+                fontSize="9"
                 textAnchor="end"
                 fontFamily="system-ui, -apple-system, sans-serif"
               >
-                ${Math.round(line.value)}
+                {formatValueShorthand(line.value)}
               </text>
             </g>
           ))}

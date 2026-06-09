@@ -82,7 +82,7 @@ export default function AddTransactionModal() {
             </TouchableOpacity>
           </View>
           
-          <View className="flex-row flex-wrap">
+          <View className="flex-row flex-wrap justify-between">
             {categories?.map(cat => (
               <CategoryBadge 
                 key={cat.id} 
@@ -107,9 +107,10 @@ export default function AddTransactionModal() {
         </View>
 
         <TouchableOpacity 
-          className={`w-full bg-blue-600 rounded-2xl p-4 items-center justify-center mt-10 ${addTransactionMutation.isPending ? 'opacity-70' : ''}`}
+          className={`w-full bg-blue-600 rounded-3xl p-4 items-center justify-center mt-10 shadow-md ${addTransactionMutation.isPending ? 'opacity-70' : ''}`}
           onPress={handleSave}
           disabled={addTransactionMutation.isPending}
+          style={{ backgroundColor: '#2563eb' }}
         >
           {addTransactionMutation.isPending ? (
             <ActivityIndicator color="white" />

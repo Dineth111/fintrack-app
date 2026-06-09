@@ -19,22 +19,27 @@ export const CategoryBadge = ({ category, isSelected, onPress }: CategoryBadgePr
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className={`mr-3 mb-3 flex-row items-center rounded-full px-4 py-2 border-2 ${
-        isSelected ? 'border-transparent' : 'border-slate-200 dark:border-slate-700'
-      }`}
+      className={`w-[30%] aspect-square mb-4 items-center justify-center rounded-2xl border-2 transition-all p-3`}
       style={{
-        backgroundColor: isSelected ? baseColor : 'transparent',
+        backgroundColor: isSelected ? `${baseColor}15` : 'transparent',
+        borderColor: isSelected ? baseColor : '#e2e8f0',
+        // Slight scale and glow effect on native/web when selected
+        transform: isSelected ? [{ scale: 1.02 }] : [{ scale: 1 }],
       }}
     >
       <View
-        className="w-6 h-6 rounded-full items-center justify-center mr-2"
-        style={{ backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : `${baseColor}33` }}
+        className="w-12 h-12 rounded-2xl items-center justify-center mb-2 shadow-sm"
+        style={{ 
+          backgroundColor: isSelected ? baseColor : `${baseColor}22` 
+        }}
       >
-        <Text className="text-sm">{category.emoji || '📦'}</Text>
+        <Text className="text-2xl">{category.emoji || '📦'}</Text>
       </View>
       <Text
-        className={`font-medium ${
-          isSelected ? 'text-white' : 'text-slate-700 dark:text-slate-300'
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        className={`font-semibold text-xs text-center ${
+          isSelected ? 'text-slate-800 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400'
         }`}
       >
         {category.name}

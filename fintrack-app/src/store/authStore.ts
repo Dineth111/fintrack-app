@@ -9,6 +9,7 @@ interface AuthState {
   isLoading: boolean;
   setSession: (session: Session | null) => void;
   fetchProfile: () => Promise<void>;
+  updateDisplayName: (name: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -43,6 +44,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.error('Error fetching profile:', error);
     } finally {
       set({ isLoading: false });
+    }
+  },
+  updateDisplayName: async (name) => {
+    const { user } = get();
+    if (!user) return;
+
+    try {
+      const { error } = await (supabase as any)
+        .from('users_profiles')
+        .update({ display_name: name })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      set((state) => ({
+        profile: state.profile ? { ...state.profile, display_name: name } : null,
+      }));
+    } catch (err) {
+      console.error('Error updating name:', err);
+      throw err;
     }
   },
   signOut: async () => {

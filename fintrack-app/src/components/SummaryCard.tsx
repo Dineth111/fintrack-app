@@ -45,7 +45,12 @@ export const SummaryCard = ({ type, amount }: SummaryCardProps) => {
       <Text className={`text-sm font-medium mb-1 ${isIncome || isBalance ? 'text-slate-300' : 'text-slate-500'}`}>
         {label}
       </Text>
-      <Text className={`text-2xl font-bold ${isIncome || isBalance ? 'text-white' : 'text-slate-800 dark:text-white'}`}>
+      <Text 
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.55}
+        className={`text-2xl font-bold ${isIncome || isBalance ? 'text-white' : 'text-slate-800 dark:text-white'}`}
+      >
         {formatCurrency(amount, currency)}
       </Text>
     </View>
