@@ -1,29 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAddTransaction } from '../../hooks/useTransactions';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useUpdateTransaction, useTransactions } from '../../hooks/useTransactions';
 import { useCategories } from '../../hooks/useCategories';
 import { useCards } from '../../hooks/useCards';
 import { AmountInput } from '../../components/AmountInput';
 import { CategoryBadge } from '../../components/CategoryBadge';
 import Toast from 'react-native-toast-message';
-import { format } from 'date-fns';
 
-export default function AddTransactionModal() {
+export default function EditTransactionModal() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
+  
+  const { data: transactions } = useTransactions();
+  const transactionToEdit = transactions?.find(t => t.id === id);
+
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState<number>(0);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [description, setDescription] = useState('');
-  
-  // Minimal date handling for native without extra packages: just use today
-  // In a full app, you'd add @react-native-community/datetimepicker here.
-  const [date] = useState(new Date());
 
   const { data: categories } = useCategories();
   const { data: cards } = useCards();
-  const addTransactionMutation = useAddTransaction();
+  const updateTransactionMutation = useUpdateTransaction();
+
+  useEffect(() => {
+    if (transactionToEdit) {
+      setType(transactionToEdit.type as 'expense' | 'income');
+      setAmount(transactionToEdit.amount);
+      setCategoryId(transactionToEdit.category_id);
+      setSelectedCardId(transactionToEdit.card_id);
+      setDescription(transactionToEdit.description || '');
+    }
+  }, [transactionToEdit]);
 
   const handleSave = () => {
     if (amount <= 0) {
@@ -34,17 +44,21 @@ export default function AddTransactionModal() {
       Toast.show({ type: 'error', text1: 'Please select a category' });
       return;
     }
+    if (!id || typeof id !== 'string') {
+      Toast.show({ type: 'error', text1: 'Transaction ID is missing' });
+      return;
+    }
 
-    addTransactionMutation.mutate({
+    updateTransactionMutation.mutate({
+      id,
       amount,
       type,
       category_id: categoryId,
       card_id: selectedCardId,
       description: description.trim() || undefined,
-      transaction_date: format(date, 'yyyy-MM-dd'),
     }, {
       onSuccess: () => {
-        Toast.show({ type: 'success', text1: 'Transaction added' });
+        Toast.show({ type: 'success', text1: 'Transaction updated' });
         router.back();
       },
       onError: (error) => {
@@ -52,6 +66,14 @@ export default function AddTransactionModal() {
       }
     });
   };
+
+  if (!transactionToEdit) {
+    return (
+      <View className="flex-1 items-center justify-center bg-blue-50 dark:bg-[#0f172a]">
+        <ActivityIndicator color="#3b82f6" />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView 
@@ -115,7 +137,6 @@ export default function AddTransactionModal() {
             contentContainerStyle={{ gap: 8 }}
             className="flex-row"
           >
-            {/* Cash/Default payment option */}
             <TouchableOpacity
               onPress={() => setSelectedCardId(null)}
               className={`px-4 py-3 rounded-2xl border flex-row items-center ${
@@ -132,7 +153,6 @@ export default function AddTransactionModal() {
               </Text>
             </TouchableOpacity>
 
-            {/* List of cards */}
             {cards?.map((card) => {
               const isSelected = selectedCardId === card.id;
               return (
@@ -154,19 +174,6 @@ export default function AddTransactionModal() {
                 </TouchableOpacity>
               );
             })}
-
-            {/* If no cards, show quick add button */}
-            {(!cards || cards.length === 0) && (
-              <TouchableOpacity
-                onPress={() => router.push('/modal/add-card')}
-                className="px-4 py-3 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 flex-row items-center active:opacity-75"
-              >
-                <Text className="text-base mr-2">➕</Text>
-                <Text className="font-semibold text-sm text-slate-500">
-                  Link a Card
-                </Text>
-              </TouchableOpacity>
-            )}
           </ScrollView>
         </View>
 
@@ -183,15 +190,15 @@ export default function AddTransactionModal() {
         </View>
 
         <TouchableOpacity 
-          className={`w-full bg-blue-600 rounded-3xl p-4 items-center justify-center mt-10 shadow-md ${addTransactionMutation.isPending ? 'opacity-70' : ''}`}
+          className={`w-full bg-blue-600 rounded-3xl p-4 items-center justify-center mt-10 shadow-md ${updateTransactionMutation.isPending ? 'opacity-70' : ''}`}
           onPress={handleSave}
-          disabled={addTransactionMutation.isPending}
+          disabled={updateTransactionMutation.isPending}
           style={{ backgroundColor: '#2563eb' }}
         >
-          {addTransactionMutation.isPending ? (
+          {updateTransactionMutation.isPending ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white font-bold text-lg">Save Transaction</Text>
+            <Text className="text-white font-bold text-lg">Update Transaction</Text>
           )}
         </TouchableOpacity>
 

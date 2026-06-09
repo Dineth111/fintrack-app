@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, Text, Platform } from 'react-native';
 import { useSettingsStore } from '../store/settingsStore';
 
@@ -13,6 +13,13 @@ export const AmountInput = ({ value, onChange, type = 'expense' }: AmountInputPr
   
   // Keep local string state to allow trailing dots and empty values during typing
   const [textValue, setTextValue] = useState(value ? value.toString() : '');
+
+  useEffect(() => {
+    const parsed = parseFloat(textValue || '0');
+    if (value !== parsed) {
+      setTextValue(value ? value.toString() : '');
+    }
+  }, [value]);
 
   const handleChange = (text: string) => {
     // Only allow numbers and a single decimal point

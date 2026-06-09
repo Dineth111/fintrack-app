@@ -3,8 +3,10 @@ import { View, Text, TextInput, FlatList, TouchableOpacity, ActivityIndicator } 
 import { useTransactions, useDeleteTransaction } from '../../hooks/useTransactions';
 import { TransactionItem } from '../../components/TransactionItem';
 import { Search, Filter } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 
 export default function TransactionsScreen() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
 
@@ -37,7 +39,7 @@ export default function TransactionsScreen() {
   );
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-slate-900 pt-16 px-6">
+    <View className="flex-1 bg-blue-50 dark:bg-[#0f172a] pt-16 px-6">
       <Text className="text-3xl font-extrabold text-slate-800 dark:text-white mb-6">Transactions</Text>
 
       <View className="flex-row items-center bg-white dark:bg-slate-800 rounded-2xl px-4 py-3 mb-4 shadow-sm">
@@ -67,9 +69,13 @@ export default function TransactionsScreen() {
           data={transactions}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TransactionItem transaction={item} onDelete={handleDelete} />
+            <TransactionItem 
+              transaction={item} 
+              onDelete={handleDelete} 
+              onEdit={(id) => router.push({ pathname: '/modal/edit-transaction', params: { id } })}
+            />
           )}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 150 }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View className="items-center justify-center py-10">

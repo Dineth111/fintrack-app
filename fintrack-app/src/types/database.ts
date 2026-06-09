@@ -64,13 +64,14 @@ export interface Database {
           created_at?: string
         }
       }
-      transactions: {
+       transactions: {
         Row: {
           id: string
           user_id: string
           amount: number
           type: 'income' | 'expense'
           category_id: string | null
+          card_id: string | null
           description: string | null
           transaction_date: string
           created_at: string
@@ -82,6 +83,7 @@ export interface Database {
           amount: number
           type: 'income' | 'expense'
           category_id?: string | null
+          card_id?: string | null
           description?: string | null
           transaction_date: string
           created_at?: string
@@ -93,10 +95,43 @@ export interface Database {
           amount?: number
           type?: 'income' | 'expense'
           category_id?: string | null
+          card_id?: string | null
           description?: string | null
           transaction_date?: string
           created_at?: string
           updated_at?: string
+        }
+      }
+      payment_cards: {
+        Row: {
+          id: string
+          user_id: string
+          card_holder_name: string
+          card_provider: string
+          card_number_last_4: string
+          expiry_date: string
+          color: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string
+          card_holder_name: string
+          card_provider: string
+          card_number_last_4: string
+          expiry_date: string
+          color?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          card_holder_name?: string
+          card_provider?: string
+          card_number_last_4?: string
+          expiry_date?: string
+          color?: string
+          created_at?: string
         }
       }
     }

@@ -15,7 +15,7 @@ export const SummaryCard = ({ type, amount }: SummaryCardProps) => {
   const isIncome = type === 'income';
   const isBalance = type === 'balance';
   
-  let bgColor = 'bg-slate-800 dark:bg-slate-900';
+  let bgColor = 'bg-slate-800 dark:bg-[#0f172a]';
   let iconBgColor = 'bg-slate-700 dark:bg-slate-800';
   let Icon = Wallet;
   let iconColor = '#cbd5e1';

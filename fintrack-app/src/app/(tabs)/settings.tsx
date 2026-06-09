@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { useSettingsStore } from '../../store/settingsStore';
+import { useCards, useDeleteCard } from '../../hooks/useCards';
 import { exportTransactionsToCSV } from '../../lib/csvExport';
-import { LogOut, Download, CreditCard, PieChart, Edit2, Check, X, User } from 'lucide-react-native';
+import { LogOut, Download, CreditCard, PieChart, Edit2, Check, X, User, Plus } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
+import { CardMockup } from '../../components/CardMockup';
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const { profile, signOut, updateDisplayName } = useAuthStore();
   const { currency, monthlyBudget, setCurrency, setMonthlyBudget } = useSettingsStore();
+  
+  const { data: cards, isLoading: isCardsLoading } = useCards();
+  const deleteCardMutation = useDeleteCard();
   
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile?.display_name || '');
@@ -51,55 +58,94 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleDeleteCard = (id: string) => {
+    deleteCardMutation.mutate(id, {
+      onSuccess: () => {
+        Toast.show({ type: 'success', text1: 'Card deleted' });
+      },
+      onError: (error) => {
+        Toast.show({ type: 'error', text1: error.message });
+      }
+    });
+  };
+
   return (
-    <ScrollView className="flex-1 bg-slate-50 dark:bg-slate-900 pt-16 px-6" contentContainerStyle={{ paddingBottom: 120 }}>
+    <ScrollView className="flex-1 bg-blue-50 dark:bg-[#0f172a] pt-16 px-6" contentContainerStyle={{ paddingBottom: 150 }}>
       <Text className="text-3xl font-extrabold text-slate-800 dark:text-white mb-6">Settings</Text>
 
-      {/* Premium Profile Section with Editor */}
+      {/* Premium Profile Section */}
       <View className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700/50 mb-6">
         <View className="flex-row items-center mb-4">
           <View className="w-16 h-16 bg-blue-50 dark:bg-slate-700 rounded-full items-center justify-center border border-blue-100 dark:border-slate-600 mr-4 shadow-sm">
             <User color="#2563eb" size={32} />
           </View>
           <View className="flex-1">
-            {isEditingName ? (
-              <View className="flex-row items-center bg-slate-100 dark:bg-slate-900 rounded-xl px-3 py-1.5 border border-slate-200 dark:border-slate-800">
-                <TextInput
-                  value={nameInput}
-                  onChangeText={setNameInput}
-                  className="flex-1 text-base font-semibold text-slate-800 dark:text-white"
-                  placeholder="Enter name"
-                  placeholderTextColor="#94a3b8"
-                  style={Platform.OS === 'web' ? { outlineWidth: 0 } : undefined}
-                />
-                {isSavingName ? (
-                  <ActivityIndicator size="small" color="#2563eb" className="ml-2" />
-                ) : (
-                  <View className="flex-row space-x-1 ml-2">
-                    <TouchableOpacity onPress={handleSaveName} className="p-1">
-                      <Check color="#10b981" size={18} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => { setIsEditingName(false); setNameInput(profile?.display_name || ''); }} className="p-1">
-                      <X color="#ef4444" size={18} />
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            ) : (
-              <View className="flex-row items-center">
-                <Text className="text-xl font-bold text-slate-800 dark:text-white mr-2">
-                  {profile?.display_name || 'User'}
-                </Text>
-                <TouchableOpacity onPress={() => setIsEditingName(true)} className="p-1">
-                  <Edit2 color="#94a3b8" size={14} />
-                </TouchableOpacity>
-              </View>
-            )}
+            <View className="flex-row items-center">
+              <Text className="text-xl font-bold text-slate-800 dark:text-white mr-2">
+                {profile?.display_name || 'User'}
+              </Text>
+              <TouchableOpacity onPress={() => router.push('/modal/edit-profile')} className="bg-slate-100 dark:bg-[#0f172a] p-1.5 rounded-full border border-slate-200 dark:border-slate-800">
+                <Edit2 color="#64748b" size={14} />
+              </TouchableOpacity>
+            </View>
             <Text className="text-slate-400 text-xs mt-1 uppercase tracking-wider font-semibold">
               FinTrack Member
             </Text>
           </View>
         </View>
+      </View>
+
+      {/* Cards Section */}
+      <View className="flex-row justify-between items-center mb-3 ml-2">
+        <Text className="text-lg font-bold text-slate-800 dark:text-white">My Cards</Text>
+        <TouchableOpacity 
+          onPress={() => router.push('/modal/add-card')}
+          className="flex-row items-center"
+        >
+          <Plus color="#2563eb" size={16} style={{ marginRight: 4 }} />
+          <Text className="text-sm font-bold text-blue-600">Add Card</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Cards List Horizontal Scroll */}
+      <View className="mb-6">
+        {isCardsLoading ? (
+          <ActivityIndicator color="#3b82f6" />
+        ) : cards && cards.length > 0 ? (
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={{ paddingRight: 24, gap: 16 }}
+            className="flex-row"
+          >
+            {cards.map(card => (
+              <View key={card.id} className="w-80">
+                <CardMockup
+                  cardHolderName={card.card_holder_name}
+                  cardProvider={card.card_provider}
+                  cardNumberLast4={card.card_number_last_4}
+                  expiryDate={card.expiry_date}
+                  color={card.color}
+                  onEdit={() => router.push({ pathname: '/modal/edit-card', params: { id: card.id } })}
+                  onDelete={() => handleDeleteCard(card.id)}
+                />
+              </View>
+            ))}
+          </ScrollView>
+        ) : (
+          <TouchableOpacity 
+            onPress={() => router.push('/modal/add-card')}
+            className="w-full aspect-[1.586] rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-700 items-center justify-center bg-white dark:bg-slate-800 p-6 shadow-sm active:opacity-75"
+          >
+            <View className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/30 items-center justify-center mb-3">
+              <CreditCard color="#2563eb" size={24} />
+            </View>
+            <Text className="text-base font-bold text-slate-700 dark:text-white">Add a payment card</Text>
+            <Text className="text-sm text-slate-400 text-center mt-1">
+              Securely link your cards to track expenses
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Preferences Section */}
@@ -109,12 +155,12 @@ export default function SettingsScreen() {
         {/* Currency Segment Control */}
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
-            <View className="w-10 h-10 bg-slate-50 dark:bg-slate-700 rounded-full items-center justify-center mr-3 border border-slate-100 dark:border-slate-600">
+            <View className="w-10 h-10 bg-blue-50 dark:bg-slate-700 rounded-full items-center justify-center mr-3 border border-slate-100 dark:border-slate-600">
               <CreditCard color="#3b82f6" size={18} />
             </View>
             <Text className="text-base font-semibold text-slate-700 dark:text-slate-200">Currency</Text>
           </View>
-          <View className="flex-row bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200/50 dark:border-slate-800">
+          <View className="flex-row bg-slate-100 dark:bg-[#0f172a] p-1 rounded-xl border border-slate-200/50 dark:border-slate-800">
             {['LKR', 'USD', 'EUR'].map((cur) => (
               <TouchableOpacity
                 key={cur}
@@ -137,12 +183,12 @@ export default function SettingsScreen() {
         {/* Monthly Budget Card */}
         <View>
           <View className="flex-row items-center mb-3">
-            <View className="w-10 h-10 bg-slate-50 dark:bg-slate-700 rounded-full items-center justify-center mr-3 border border-slate-100 dark:border-slate-600">
+            <View className="w-10 h-10 bg-blue-50 dark:bg-slate-700 rounded-full items-center justify-center mr-3 border border-slate-100 dark:border-slate-600">
               <PieChart color="#3b82f6" size={18} />
             </View>
             <Text className="text-base font-semibold text-slate-700 dark:text-slate-200">Monthly Budget</Text>
           </View>
-          <View className="flex-row bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 items-center">
+          <View className="flex-row bg-blue-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl p-2 items-center">
             <TextInput
               className="flex-1 px-3 py-2.5 text-base text-slate-800 dark:text-white"
               placeholder={`Amount in ${currency}`}

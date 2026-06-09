@@ -51,14 +51,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!user) return;
 
     try {
-      const { error } = await (supabase as any)
+      // Try to update first
+      const { data, error } = await (supabase as any)
         .from('users_profiles')
         .update({ display_name: name })
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select();
 
       if (error) throw error;
+
+      // If no rows updated, it means the profile doesn't exist yet, so we insert it
+      if (!data || data.length === 0) {
+        const { error: insertError } = await (supabase as any)
+          .from('users_profiles')
+          .insert({ id: user.id, display_name: name });
+        
+        if (insertError) throw insertError;
+      }
+
+      // Update local state instantly
       set((state) => ({
-        profile: state.profile ? { ...state.profile, display_name: name } : null,
+        profile: state.profile 
+          ? { ...state.profile, display_name: name } 
+          : { id: user.id, display_name: name, currency: 'LKR', monthly_budget: null },
       }));
     } catch (err) {
       console.error('Error updating name:', err);

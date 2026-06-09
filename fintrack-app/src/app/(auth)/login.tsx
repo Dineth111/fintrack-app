@@ -31,7 +31,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-slate-50 dark:bg-slate-900 justify-center px-6"
+      className="flex-1 bg-blue-50 dark:bg-[#0f172a] justify-center px-6"
     >
       <View className="items-center mb-6">
         <Image 

@@ -1,7 +1,5 @@
-import React from 'react';
-import { View, Text } from 'react-native';
-import { CartesianChart, Line, Bar, useChartPressState } from 'victory-native';
-import { useFont } from '@shopify/react-native-skia';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Platform } from 'react-native';
 
 interface ChartCardProps {
   data: any[];
@@ -13,72 +11,64 @@ interface ChartCardProps {
 }
 
 export const ChartCard = ({ data, xKey, yKeys, type, title, colors = ['#3b82f6', '#ef4444'] }: ChartCardProps) => {
-  const { state } = useChartPressState({ x: 0, y: { [yKeys[0]]: 0 } });
-  
-  // Note: For a real production app, you'd load a custom font file using require()
-  // const font = useFont(require('../../assets/fonts/Inter-Regular.ttf'), 12);
-  const font = undefined; // Skia will use default font
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Simple mount animation delay
+    const timer = setTimeout(() => setMounted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!data || data.length === 0) {
     return (
-      <View className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm mt-4 min-h-[200px] items-center justify-center">
+      <View className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm mt-4 min-h-[200px] items-center justify-center border border-slate-100 dark:border-slate-700/50">
         <Text className="text-slate-500 font-medium">{title}</Text>
         <Text className="text-slate-400 mt-2 text-sm">No data available</Text>
       </View>
     );
   }
 
+  // Find max value to calculate heights
+  const maxValue = Math.max(...data.map(d => {
+    return Math.max(...yKeys.map(k => Number(d[k]) || 0));
+  }), 1); // fallback to 1 to avoid division by zero
+
+  const primaryColor = colors[0];
+
   return (
-    <View className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm mt-4">
-      <Text className="text-slate-500 font-medium mb-4">{title}</Text>
+    <View className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm mt-4 border border-slate-100 dark:border-slate-700/50">
+      <Text className="text-slate-700 dark:text-slate-300 font-bold mb-6 text-base">{title}</Text>
       
-      <View style={{ height: 200 }}>
-        <CartesianChart
-          data={data}
-          xKey={xKey}
-          yKeys={yKeys}
-          domainPadding={{ left: 20, right: 20, top: 20, bottom: 20 }}
-          axisOptions={{
-            font,
-            tickCount: 5,
-            lineColor: '#e2e8f0',
-            labelColor: '#94a3b8',
-          }}
-          chartPressState={state}
-        >
-          {({ points, chartBounds }) => {
-            if (type === 'line') {
-              return (
-                <>
-                  {yKeys.map((key, idx) => (
-                    <Line
-                      key={key}
-                      points={points[key]}
-                      color={colors[idx % colors.length]}
-                      strokeWidth={3}
-                      animate={{ type: 'timing', duration: 500 }}
-                    />
-                  ))}
-                </>
-              );
-            } else {
-              return (
-                <>
-                  {yKeys.map((key, idx) => (
-                    <Bar
-                      key={key}
-                      points={points[key]}
-                      chartBounds={chartBounds}
-                      color={colors[idx % colors.length]}
-                      roundedCorners={{ topLeft: 4, topRight: 4 }}
-                      animate={{ type: 'timing', duration: 500 }}
-                    />
-                  ))}
-                </>
-              );
-            }
-          }}
-        </CartesianChart>
+      <View className="flex-row items-end justify-between h-40">
+        {data.map((item, index) => {
+          const val = Number(item[yKeys[0]]) || 0;
+          const heightPercentage = (val / maxValue) * 100;
+          
+          return (
+            <View key={index} className="items-center flex-1">
+              {/* Tooltip/Value (only show if height > 0 to keep it clean, or always show for top value) */}
+              <View className="w-full flex-row justify-center items-end h-full pb-2">
+                <View 
+                  className="w-full max-w-[12px] md:max-w-[16px] rounded-t-md opacity-80"
+                  style={{
+                    backgroundColor: primaryColor,
+                    height: mounted ? `${heightPercentage}%` : '0%',
+                    transitionProperty: 'height',
+                    transitionDuration: '700ms',
+                    transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                  } as any}
+                />
+              </View>
+              {/* X Axis Label */}
+              <Text 
+                className="text-[10px] text-slate-400 font-medium uppercase mt-2"
+                numberOfLines={1}
+              >
+                {item[xKey]}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     </View>
   );

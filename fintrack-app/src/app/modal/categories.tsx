@@ -37,7 +37,7 @@ export default function CategoriesModal() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-slate-50 dark:bg-slate-900"
+      className="flex-1 bg-blue-50 dark:bg-[#0f172a]"
     >
       <ScrollView className="flex-1 px-6 pt-6" contentContainerStyle={{ paddingBottom: 60 }}>
         
@@ -48,7 +48,7 @@ export default function CategoriesModal() {
             <View className="flex-1">
               <Text className="text-sm text-slate-500 mb-1 ml-1">Name</Text>
               <TextInput
-                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-800 dark:text-white"
+                className="bg-blue-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-800 dark:text-white"
                 placeholder="e.g. Subscriptions"
                 placeholderTextColor="#94a3b8"
                 value={name}
@@ -58,7 +58,7 @@ export default function CategoriesModal() {
             <View className="w-16">
               <Text className="text-sm text-slate-500 mb-1 ml-1">Emoji</Text>
               <TextInput
-                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-center text-slate-800 dark:text-white"
+                className="bg-blue-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-center text-slate-800 dark:text-white"
                 value={emoji}
                 onChangeText={setEmoji}
                 maxLength={2}
